@@ -1,28 +1,34 @@
-import React from "react";
+import React, { useState } from "react";
 
 interface ContactFormProps {
-	name: string;
-	email: string;
-	contact: string;
 	selectedCourse: Course | null;
 	message: string;
-	setName: (name: string) => void;
-	setEmail: (email: string) => void;
-	setContact: (contact: string) => void;
-	handleSubmit: (e: React.FormEvent) => void;
+	handleSubmit: (contactInfo: ContactProps) => void;
 }
 
 const ContactForm: React.FC<ContactFormProps> = ({
-	name,
-	email,
-	contact,
 	selectedCourse,
 	message,
-	setName,
-	setEmail,
-	setContact,
 	handleSubmit,
 }) => {
+	const [formData, setFormData] = useState<ContactProps>({
+		name: "",
+		email: "",
+		contact: "",
+	});
+
+	const onSubmit = async (e: React.FormEvent) => {
+		e.preventDefault();
+		handleSubmit(formData);
+	};
+
+	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		setFormData({
+			...formData,
+			[e.target.name]: e.target.value,
+		});
+	};
+
 	return (
 		<>
 			{message ? (
@@ -30,7 +36,7 @@ const ContactForm: React.FC<ContactFormProps> = ({
 			) : (
 				<form
 					className="mt-8 flex flex-col justify-center items-center"
-					onSubmit={handleSubmit}
+					onSubmit={onSubmit}
 				>
 					<h2 className="text-xl font-bold mb-5">
 						Interested in: {selectedCourse?.CourseName}
@@ -39,10 +45,11 @@ const ContactForm: React.FC<ContactFormProps> = ({
 						<label className="block mb-2 text-sm text-slate-600">Email</label>
 						<input
 							type="email"
+							name="email"
 							className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow"
 							placeholder="Your Email"
-							value={email}
-							onChange={(e) => setEmail(e.target.value)}
+							value={formData.email}
+							onChange={handleChange}
 							required
 						/>
 					</div>
@@ -52,10 +59,11 @@ const ContactForm: React.FC<ContactFormProps> = ({
 						</label>
 						<input
 							type="text"
-							value={name}
-							onChange={(e) => setName(e.target.value)}
+							name="name"
 							className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md pl-3 pr-20 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow"
 							placeholder="Your Name"
+							value={formData.name}
+							onChange={handleChange}
 							required
 						/>
 					</div>
@@ -64,11 +72,12 @@ const ContactForm: React.FC<ContactFormProps> = ({
 							Contact
 						</label>
 						<input
-							type="text"
+							type="number"
+							name="contact"
 							className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md pl-3 pr-20 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow"
 							placeholder="xxx-xxx-xxxx"
-							onChange={(e) => setContact(e.target.value)}
-							value={contact}
+							value={formData.contact}
+							onChange={handleChange}
 							required
 						/>
 					</div>
