@@ -32,4 +32,3 @@ export const loadCourses = async (): Promise<Course[]> => {
     parser.on('end', () => resolve(courses));
   });
 };
-

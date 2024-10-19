@@ -12,5 +12,5 @@ declare type Course = {
 declare type ContactProps = {
   name: string;
   email: string;
-  contact: string;
+  contact: string;  
 };

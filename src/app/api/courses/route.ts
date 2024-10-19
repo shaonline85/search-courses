@@ -1,8 +1,7 @@
-import { loadCourses } from '@/app/lib/utils';
+import { loadCourses } from "../../../lib/courseLoader";
 import { NextResponse } from "next/server";
 
 //export const dynamic = "force-dynamic";
-
 export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
@@ -23,6 +22,6 @@ export async function GET(request: Request) {
   }
     
   catch (error) {
-    return NextResponse.json({ error: 'Failed to load courses' }, { status: 500 });
+    return NextResponse.json({ error: `Faild to load courses: ${error}` }, { status: 500 });
   }
 }

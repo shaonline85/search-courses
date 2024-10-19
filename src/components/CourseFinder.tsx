@@ -23,26 +23,19 @@ const CourseFinder = () => {
 		setMessage("");
 	};
 
-	const handleSubmit = async ({ name, email, contact }: ContactProps) => {
-		const contactInfo = {
-			name,
-			email,
-			contact,
-			selectedCourse,
-		};
-
+	const handleSubmit = async (formData: ContactProps) => {
 		const res = await fetch("/api/contact", {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
 			},
-			body: JSON.stringify(contactInfo),
+			body: JSON.stringify(formData),
 		});
 
 		if (res.ok) {
+			localStorage.setItem("interestedCourse", JSON.stringify(formData));
 			setMessage("Contact information submitted successfully!");
 			setSelectedCourse(null);
-			localStorage.setItem("interestedCourse", JSON.stringify(contactInfo));
 		} else {
 			setMessage("Failed to submit contact information");
 		}

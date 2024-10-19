@@ -1,5 +1,16 @@
 import React, { useState, useEffect, useCallback } from "react";
 import debounce from "lodash.debounce";
+import {
+	Table,
+	TableBody,
+	TableCaption,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { removeTimeFromDateTime } from "@/lib/utils";
 
 interface CourseListProps {
 	handleSelectCourse: (course: Course) => void;
@@ -12,16 +23,23 @@ const CourseList: React.FC<CourseListProps> = ({
 }) => {
 	const [courses, setCourses] = useState<Course[]>([]);
 	const [loading, setLoading] = useState(true);
-
-	const removeTimeFromDateTime = (dateTime: string): string =>
-		dateTime.split(" ")[0];
+	const [error, setError] = useState<string | null>(null);
 
 	const fetchCourses = async (term: string) => {
 		setLoading(true);
-		const res = await fetch(`/api/courses?search=${term}`);
-		const data = await res.json();
-		setCourses(data);
-		setLoading(false);
+		setError(null);
+		try {
+			const res = await fetch(`/api/courses?search=${term}`);
+			if (!res.ok) {
+				throw new Error("Failed to fetch courses");
+			}
+			const data = await res.json();
+			setCourses(data);
+		} catch (err) {
+			setError("Unable to load courses. Please try again later.");
+		} finally {
+			setLoading(false);
+		}
 	};
 
 	const debouncedFetchCourses = useCallback(
@@ -41,91 +59,61 @@ const CourseList: React.FC<CourseListProps> = ({
 			<h3 className="mb-3 text-lg">Course List</h3>
 
 			<div className="relative flex flex-col w-full h-[70vh] overflow-y-auto text-gray-700 bg-white shadow-md rounded-lg bg-clip-border">
-				<table className="w-full text-left table-auto">
-					<thead className="sticky top-0 bg-white z-10">
-						<tr>
-							<th className="p-4 border-b border-slate-300 bg-slate-50">
-								<p className="block text-sm font-normal leading-none text-slate-500">
-									CourseName
-								</p>
-							</th>
-							<th className="p-4 border-b border-slate-300 bg-slate-50">
-								<p className="block text-sm font-normal leading-none text-slate-500">
-									Institute Name
-								</p>
-							</th>
-							<th className="p-4 border-b border-slate-300 bg-slate-50">
-								<p className="block text-sm font-normal leading-none text-slate-500">
-									Category
-								</p>
-							</th>
-							<th className="p-4 border-b border-slate-300 bg-slate-50">
-								<p className="block text-sm font-normal leading-none text-slate-500">
-									Start Date
-								</p>
-							</th>
-
-							<th className="p-4 border-b border-slate-300 bg-slate-50">
-								<p className="block text-sm font-normal leading-none text-slate-500"></p>
-							</th>
-						</tr>
-					</thead>
-					<tbody className="">
+				<Table>
+					<TableCaption>A list of available courses.</TableCaption>
+					<TableHeader className="sticky top-0 bg-white z-10">
+						<TableRow>
+							<TableHead className="w-[100px]">Course</TableHead>
+							<TableHead>Institute</TableHead>
+							<TableHead>Category</TableHead>
+							<TableHead className="text-right">StartDate</TableHead>
+							<TableHead className="text-right"></TableHead>
+						</TableRow>
+					</TableHeader>
+					<TableBody>
 						{courses.length > 0 ? (
 							courses.map((course) => (
-								<tr className="hover:bg-slate-50">
-									<td className="p-2 border-b border-slate-200">
-										<p className="block text-sm text-slate-800">
-											{course.CourseName}
-										</p>
-									</td>
-									<td className="p-2 border-b border-slate-200">
-										<p className="block text-sm text-slate-800">
-											{course.InstituteName}
-										</p>
-									</td>
-									<td className="p-2 border-b border-slate-200">
-										<p className="block text-sm text-slate-800">
-											{course.Category}
-										</p>
-									</td>
-									<td className="p-2 border-b border-slate-200">
-										<p className="block text-sm text-slate-800">
-											{removeTimeFromDateTime(course.StartDate)}
-										</p>
-									</td>
-									<td className="p-2 border-b border-slate-200">
-										<button
-											data-modal-target="form-modal"
-											data-modal-toggle="form-modal"
-											className="rounded-md border border-slate-300 py-2 px-4 text-center text-sm transition-all shadow-sm hover:shadow-lg text-slate-600 hover:text-white hover:bg-slate-800 hover:border-slate-800 focus:text-white focus:bg-slate-800 focus:border-slate-800 active:border-slate-800 active:text-white active:bg-slate-800 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
+								<TableRow>
+									<TableCell className="font-medium min-w-96">
+										{course.CourseName}
+									</TableCell>
+									<TableCell>{course.InstituteName}</TableCell>
+									<TableCell>{course.Category}</TableCell>
+									<TableCell className="text-right">
+										{removeTimeFromDateTime(course.StartDate)}
+									</TableCell>
+									<TableCell className="text-right">
+										<Button
 											type="button"
+											className=" bg-slate-700"
 											onClick={() => handleSelectCourse(course)}
 										>
 											Select
-										</button>
-									</td>
-								</tr>
+										</Button>
+									</TableCell>
+								</TableRow>
 							))
 						) : loading ? (
-							<tr className="hover:bg-slate-50">
-								<td className="p-2 border-b border-slate-200" colSpan={5}>
-									<p className="block text-sm text-slate-800 text-center">
-										Loading courses...
-									</p>
-								</td>
-							</tr>
+							<TableRow>
+								<TableCell colSpan={5} className="text-center">
+									Loading courses...
+								</TableCell>
+							</TableRow>
+						) : error ? (
+							<TableRow>
+								<TableCell colSpan={5} className="text-center">
+									{error}
+								</TableCell>
+							</TableRow>
 						) : (
-							<tr className="hover:bg-slate-50">
-								<td className="p-2 border-b border-slate-200" colSpan={5}>
-									<p className="block text-sm text-slate-800 text-center">
-										No courses found
-									</p>
-								</td>
-							</tr>
+							<TableRow>
+								<TableCell colSpan={5} className="text-center">
+									No courses found
+								</TableCell>
+							</TableRow>
 						)}
-					</tbody>
-				</table>
+					</TableBody>
+				</Table>
 			</div>
 		</>
 	);
