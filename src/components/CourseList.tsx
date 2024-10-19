@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, cache } from "react";
 import debounce from "lodash.debounce";
 import {
 	Table,
@@ -16,6 +16,10 @@ interface CourseListProps {
 	handleSelectCourse: (course: Course) => void;
 	searchTerm: string;
 }
+type cacheDataType = {
+	timestamp: number;
+	courses: Course[];
+};
 
 const CourseList: React.FC<CourseListProps> = ({
 	searchTerm,
@@ -24,19 +28,34 @@ const CourseList: React.FC<CourseListProps> = ({
 	const [courses, setCourses] = useState<Course[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
+	const CACHE_DURATION = 10 * 60 * 1000;
 
 	const fetchCourses = async (term: string) => {
 		setLoading(true);
 		setError(null);
+
+		const cachedData = localStorage.getItem(`courses_${term}`);
+		if (cachedData) {
+			const parsedData = JSON.parse(cachedData);
+			setCourses(parsedData.courses);
+			setLoading(false);
+			return;
+		}
+
 		try {
 			const res = await fetch(`/api/courses?search=${term}`);
-			if (!res.ok) {
-				throw new Error("Failed to fetch courses");
-			}
+			if (!res.ok) throw new Error("Failed to fetch courses");
 			const data = await res.json();
+			if (term) {
+				const cacheData: cacheDataType = {
+					timestamp: Date.now(),
+					courses: data,
+				};
+				localStorage.setItem(`courses_${term}`, JSON.stringify(cacheData));
+			}
 			setCourses(data);
 		} catch (err) {
-			setError("Unable to load courses. Please try again later.");
+			setError("Unable to load courses. Please try again later, Error: " + err);
 		} finally {
 			setLoading(false);
 		}
@@ -49,7 +68,21 @@ const CourseList: React.FC<CourseListProps> = ({
 		[]
 	);
 
+	const clearExpiredCaches = () => {
+		const keys = Object.keys(localStorage);
+		keys.forEach((key) => {
+			const cachedData = localStorage.getItem(key);
+			if (cachedData) {
+				const { timestamp } = JSON.parse(cachedData);
+				if (Date.now() - timestamp >= CACHE_DURATION) {
+					localStorage.removeItem(key);
+				}
+			}
+		});
+	};
+
 	useEffect(() => {
+		clearExpiredCaches();
 		if (searchTerm) debouncedFetchCourses(searchTerm);
 		else fetchCourses(searchTerm);
 	}, [searchTerm, debouncedFetchCourses]);
@@ -61,7 +94,7 @@ const CourseList: React.FC<CourseListProps> = ({
 			<div className="relative flex flex-col w-full h-[70vh] overflow-y-auto text-gray-700 bg-white shadow-md rounded-lg bg-clip-border">
 				<Table>
 					<TableCaption>A list of available courses.</TableCaption>
-					<TableHeader className="sticky top-0 bg-white z-10">
+					<TableHeader className="sticky top-0 bg-slate-50 z-10">
 						<TableRow>
 							<TableHead className="w-[100px]">Course</TableHead>
 							<TableHead>Institute</TableHead>
@@ -73,7 +106,7 @@ const CourseList: React.FC<CourseListProps> = ({
 					<TableBody>
 						{courses.length > 0 ? (
 							courses.map((course) => (
-								<TableRow>
+								<TableRow key={course.CourseId}>
 									<TableCell className="font-medium min-w-96">
 										{course.CourseName}
 									</TableCell>

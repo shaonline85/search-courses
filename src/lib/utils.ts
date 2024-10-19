@@ -10,8 +10,7 @@ export const contactFormSchema = () => z.object({
   name: z.string().min(3),
   contact: z.string().min(10).max(10),  
   email: z.string().email()
-  }
-)
+})
 
 export const removeTimeFromDateTime = (dateTime: string): string =>
 		dateTime.split(" ")[0];

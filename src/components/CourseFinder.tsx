@@ -23,7 +23,7 @@ const CourseFinder = () => {
 		setMessage("");
 	};
 
-	const handleSubmit = async (formData: ContactProps) => {
+	const handleSubmit = async (formData: selectedCourseProps) => {
 		const res = await fetch("/api/contact", {
 			method: "POST",
 			headers: {
@@ -48,7 +48,7 @@ const CourseFinder = () => {
 				searchTerm={searchTerm}
 				handleSelectCourse={handleSelectCourse}
 			/>
-			{isModalOpen && (
+			{isModalOpen && selectedCourse && (
 				<Modal onClose={handleCloseModal}>
 					<ContactForm
 						message={message}

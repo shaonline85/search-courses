@@ -8,9 +8,9 @@ import CustomInput from "@/components/CustomInput";
 import { Button } from "@/components/ui/button";
 
 interface ContactFormProps {
-	selectedCourse: Course | null;
+	selectedCourse: Course;
 	message: string;
-	handleSubmit: (contactInfo: ContactProps) => void;
+	handleSubmit: (contactInfo: selectedCourseProps) => void;
 }
 
 const ContactForm: React.FC<ContactFormProps> = ({
@@ -32,7 +32,7 @@ const ContactForm: React.FC<ContactFormProps> = ({
 
 	const onSubmit = async (data: z.infer<typeof formSchema>) => {
 		setSubmitting(true);
-		await handleSubmit(data);
+		await handleSubmit({ ...data, selectedCourse });
 		setSubmitting(false);
 	};
 

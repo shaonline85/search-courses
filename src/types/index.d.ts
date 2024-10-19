@@ -14,3 +14,7 @@ declare type ContactProps = {
   email: string;
   contact: string;  
 };
+
+declare type selectedCourseProps = ContactProps & {
+  selectedCourse: Course;
+};

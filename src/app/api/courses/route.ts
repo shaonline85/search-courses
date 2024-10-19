@@ -1,24 +1,33 @@
 import { loadCourses } from "../../../lib/courseLoader";
 import { NextResponse } from "next/server";
 
-//export const dynamic = "force-dynamic";
+let courseCache: Course[] | null = null;
+const cacheDuration = 24 * 60 * 60 * 1000;
+let lastCacheTime = 0;
+
 export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   const searchTerm = searchParams.get('search');
 
   try{
-    let courses = await loadCourses();
+    const now = Date.now();
+    if (!courseCache || now - lastCacheTime > cacheDuration) {      
+      courseCache = await loadCourses();
+      lastCacheTime = now;
+    } 
+
+    let filteredCourses = courseCache;
     
     if (searchTerm) {
-      courses = courses.filter((course :Course) =>
+      filteredCourses = courseCache.filter((course :Course) =>
         course.InstituteName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         course.CourseName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         course.Category.toLowerCase().includes(searchTerm.toLowerCase()) 
       );
     }
 
-    return NextResponse.json(courses);
+    return NextResponse.json(filteredCourses);
   }
     
   catch (error) {
