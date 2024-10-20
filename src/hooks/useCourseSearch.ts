@@ -64,6 +64,3 @@ const useCourseSearch = (term: string, cacheDuration: number) => {
 };
 
 export default useCourseSearch;
-
-
-
