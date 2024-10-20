@@ -11,7 +11,7 @@ const useCourseSearch = (term: string, cacheDuration: number) => {
 		setLoading(true);
 		setError(null);
 
-		const cachedData = localStorage.getItem(`courses_${term}`);
+		const cachedData = localStorage.getItem(`keystoneCourses_${term}`);
 		if (cachedData) {
 			const parsedData = JSON.parse(cachedData);
 			setCourses(parsedData.courses);
@@ -28,7 +28,7 @@ const useCourseSearch = (term: string, cacheDuration: number) => {
 					timestamp: Date.now(),
 					courses: data,
 				};
-				localStorage.setItem(`courses_${term}`, JSON.stringify(cacheData));
+				localStorage.setItem(`keystoneCourses_${term}`, JSON.stringify(cacheData));
 			}
 			setCourses(data);
 		} catch (err) {
@@ -44,14 +44,16 @@ const useCourseSearch = (term: string, cacheDuration: number) => {
 	const clearExpiredCaches = () => {
 		const keys = Object.keys(localStorage);
 		keys.forEach((key) => {
-			const cachedData = localStorage.getItem(key);
-			if (cachedData) {
+			if (key.startsWith("keystoneCourses_")) { 
+				const cachedData = localStorage.getItem(key);
+				if (cachedData) {
 				const { timestamp } = JSON.parse(cachedData);
 				if (Date.now() - timestamp >= cacheDuration) {
 					localStorage.removeItem(key);
 				}
 			}
-		});
+		}}
+	);
 	};
 
 	useEffect(() => {
