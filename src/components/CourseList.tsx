@@ -53,6 +53,7 @@ const CourseList: React.FC<CourseListProps> = ({
 									<CourseTableRow
 										course={course}
 										handleSelect={handleSelectCourse}
+										key={course.CourseId}
 									/>
 								))
 							) : (

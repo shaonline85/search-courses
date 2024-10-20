@@ -38,6 +38,7 @@ const useCourseSearch = (term: string, cacheDuration: number) => {
 		}
 	};
 
+	// eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedFetchCourses = useMemo(() => debounce((term: string) => fetchCourses(term), 300), [term]);
 
 	const clearExpiredCaches = () => {
