@@ -69,7 +69,13 @@ const ContactForm: React.FC<ContactFormProps> = ({
 						label="Contact"
 						placeholder="Enter your contact"
 					/>
-					<Button type="submit" className="w-full" disabled={submitting}>
+					<Button
+						type="submit"
+						name="submit"
+						role="button"
+						className="w-full"
+						disabled={submitting}
+					>
 						{submitting ? "Submitting..." : "Submit"}
 					</Button>
 				</form>

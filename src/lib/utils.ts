@@ -15,5 +15,16 @@ export const contactFormSchema = () => z.object({
 export const removeTimeFromDateTime = (dateTime: string): string =>
 		dateTime.split(" ")[0];
 
+export const mockCourse = {
+  Category: "testCategory",
+	CourseId: "000666",
+	CourseName: "testCourseName",
+	DeliveryMethod: "Distans",
+	InstituteName: "testInstituteName",
+	Language: "NULL",
+	Location: "Distance",
+	StartDate: "2024-02-05 00:00:00.000",
+}
 
+export const mockCourses = [mockCourse];
 
