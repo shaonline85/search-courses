@@ -8,36 +8,59 @@ import Modal from "./Modal";
 
 const CourseFinder = () => {
 	const [searchTerm, setSearchTerm] = useState<string>("");
-	const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
-	const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-	const [message, setMessage] = useState<string>("");
+	const [modalState, setModalState] = useState({
+		isOpen: false,
+		selectedCourse: null as Course | null,
+		message: "",
+	});
 
-	const handleSelectCourse = (course: Course) => {
-		setSelectedCourse(course);
-		setIsModalOpen(true);
+	const openModalWithSelectedCourse = (course: Course) => {
+		setModalState({
+			isOpen: true,
+			selectedCourse: course,
+			message: "",
+		});
 	};
 
-	const handleCloseModal = () => {
-		setIsModalOpen(false);
-		setSelectedCourse(null);
-		setMessage("");
+	const closeModal = () => {
+		setModalState({
+			isOpen: false,
+			selectedCourse: null,
+			message: "",
+		});
 	};
 
 	const handleSubmit = async (formData: selectedCourseProps) => {
-		const res = await fetch("/api/contact", {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify(formData),
-		});
+		try {
+			const res = await fetch("/api/contact", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify(formData),
+			});
 
-		if (res.ok) {
+			if (!res.ok) {
+				setModalState((prev) => ({
+					...prev,
+					message: "Failed to submit contact information",
+				}));
+				return;
+			}
+
 			localStorage.setItem("interestedCourse", JSON.stringify(formData));
-			setMessage("Contact information submitted successfully!");
-			setSelectedCourse(null);
-		} else {
-			setMessage("Failed to submit contact information");
+			setModalState((prev) => ({
+				...prev,
+				message: "Contact information submitted successfully!",
+				selectedCourse: null,
+			}));
+		} catch (error) {
+			setModalState((prev) => ({
+				...prev,
+				message: `Could not submit contact information. Error: ${
+					(error as Error).message
+				}`,
+			}));
 		}
 	};
 
@@ -46,13 +69,13 @@ const CourseFinder = () => {
 			<SearchInput searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 			<CourseList
 				searchTerm={searchTerm}
-				handleSelectCourse={handleSelectCourse}
+				handleSelectCourse={openModalWithSelectedCourse}
 			/>
-			{isModalOpen && selectedCourse && (
-				<Modal onClose={handleCloseModal}>
+			{modalState.isOpen && (
+				<Modal onClose={closeModal}>
 					<ContactForm
-						message={message}
-						selectedCourse={selectedCourse}
+						responseMessage={modalState.message}
+						selectedCourse={modalState.selectedCourse}
 						handleSubmit={handleSubmit}
 					/>
 				</Modal>
